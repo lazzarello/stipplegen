@@ -172,7 +172,7 @@ void redrawButtons() {
   offScreen.beginDraw();
   offScreen.background(0, 0);
 
-  DrawButtons(offScreen);
+  //DrawButtons(offScreen);
 
   offScreen.endDraw();
 
@@ -245,6 +245,7 @@ void zero()
   //  if (debugMode) println("Motor X: " + MotorX + "  Motor Y: " + MotorY);
 }
 
+/*
 void clearall()
 {  // ***** CLEAR ALL *****
 
@@ -262,6 +263,7 @@ void clearall()
   Paused = false; 
   pause();
 }
+*/
 
 void quitApp()
 {  // ***** QUIT *****

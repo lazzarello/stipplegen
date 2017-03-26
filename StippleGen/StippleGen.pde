@@ -101,6 +101,8 @@ import javax.swing.JFileChooser;
 
 // need serial lib for AxiDraw control
 import processing.serial.*;
+// ANI lib to animate the axidraw
+import de.looksgood.ani.*;
 
 // helper class for rendering
 ToxiclibsSupport gfx;
@@ -184,6 +186,115 @@ int delayAfterLoweringBrush = 300; //ms
 boolean debugMode = false;
 
 boolean PaperSizeA4 = false; // true for A4. false for US letter.
+
+// Offscreen buffer images for holding drawn elements, makes redrawing MUCH faster
+
+PGraphics offScreen;
+
+PImage imgBackground;   // Stores background data image only.
+PImage imgMain;         // Primary drawing canvas
+PImage imgLocator;      // Cursor crosshairs
+PImage imgButtons;      // Text buttons
+PImage imgHighlight;
+
+boolean segmentQueued = false;
+PVector queuePt1 = new PVector(-1, -1);
+PVector queuePt2 = new PVector(-1, -1);
+
+float MotorStepsPerPixel = 32.1;// Good for 1/16 steps-- standard behavior.
+float PixelsPerInch = 63.3; 
+
+// Hardware resolution: 1016 steps per inch @ 50% max resolution
+// Horizontal extent in this window frame is 740 px.
+// 2032 steps per inch * (11.69 inches (i.e., A4 length)) per 740 px gives 16.05 motor steps per pixel.
+// Vertical travel for 8.5 inches should be  (8.5 inches * 2032 steps/inch) / (32.1 steps/px) = 538 px.
+// PixelsPerInch is given by (2032 steps/inch) / (32.1 steps/px) = 63.3 pixels per inch
+
+
+// Positions of screen items
+
+int MousePaperLeft =  30;
+int MousePaperRight =  770;
+int MousePaperTop =  62;
+int MousePaperBottom =  600;
+
+int yBrushRestPositionPixels = 6;
+
+
+int ServoUp;    // Brush UP position, native units
+int ServoPaint;    // Brush DOWN position, native units. 
+
+int MotorMinX;
+int MotorMinY;
+int MotorMaxX;
+int MotorMaxY;
+
+color Black = color(25, 25, 25);  // BLACK
+color PenColor = Black;
+
+boolean firstPath;
+boolean doSerialConnect = true;
+boolean SerialOnline;
+Serial myPort;  // Create object from Serial class
+int val;        // Data received from the serial port
+
+boolean BrushDown;
+boolean BrushDownAtPause;
+boolean DrawingPath = false;
+
+int xLocAtPause;
+int yLocAtPause;
+
+int MotorX;  // Position of X motor
+int MotorY;  // Position of Y motor
+int MotorLocatorX;  // Position of motor locator
+int MotorLocatorY; 
+PVector lastPosition; // Record last encoded position for drawing
+
+boolean forceRedraw;
+boolean shiftKeyDown;
+boolean keyup = false;
+boolean keyright = false;
+boolean keyleft = false;
+boolean keydown = false;
+boolean hKeyDown = false;
+int lastButtonUpdateX = 0;
+int lastButtonUpdateY = 0;
+
+boolean lastBrushDown_DrawingPath;
+int lastX_DrawingPath;
+int lastY_DrawingPath;
+
+
+int NextMoveTime;          //Time we are allowed to begin the next movement (i.e., when the current move will be complete).
+int SubsequentWaitTime = -1;    //How long the following movement will take.
+int UIMessageExpire;
+int raiseBrushStatus;
+int lowerBrushStatus;
+int moveStatus;
+int MoveDestX;
+int MoveDestY; 
+int PaintDest; 
+
+boolean Paused;
+
+PVector[] ToDoList;  // Queue future events in an array; Coordinate/command
+// X-coordinate, Y Coordinate.
+// If X-coordinate is negative, that is a non-move command.
+
+
+int indexDone;    // Index in to-do list of last action performed
+int indexDrawn;   // Index in to-do list of last to-do element drawn to screen
+
+
+// Active buttons
+PFont font_ML16;
+PFont font_CB; // Command button font
+
+int TextColor = 75;
+int LabelColor = 150;
+color TextHighLight = Black;
+int DefocusColor = 175;
 
 void LoadImageAndScale() {
   int tempx = 0;
