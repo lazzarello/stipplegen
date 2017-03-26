@@ -2,6 +2,38 @@
  * Loop check functions (not for drawing)
  */
 
+boolean serviceBrush()
+{
+  // Manage processes of getting paint, water, and cleaning the brush,
+  // as well as general lifts and moves.  Ensure that we allow time for the
+  // brush to move, and wait respectfully, without local wait loops, to
+  // ensure good performance for the artist.
+
+  // Returns true if servicing is still taking place, and false if idle.
+
+  boolean serviceStatus = false;
+
+  int waitTime = NextMoveTime - millis();
+  if (waitTime >= 0)
+  {
+    serviceStatus = true;
+    // We still need to wait for *something* to finish!
+  } else {
+    if (raiseBrushStatus >= 0)
+    {
+      raiseBrush();
+      serviceStatus = true;
+    } else if (lowerBrushStatus >= 0)
+    {
+      lowerBrush();
+      serviceStatus = true;
+    } else if (moveStatus >= 0) {
+      MoveToXY(); // Perform next move, if one is pending.
+      serviceStatus = true;
+    }
+  }
+  return serviceStatus;
+}
 
 // Manage checking if the brush needs servicing, and moving to the next path
 void checkServiceBrush() {
