@@ -400,6 +400,117 @@ void MainArraySetup() {
   fileModeTSP = false;
 }
 
+void drawToDoList()
+{  
+  // Erase all painting on main image background, and draw the existing "ToDo" list
+  // on the off-screen buffer.
+
+  int j = ToDoList.length;
+  float x1, x2, y1, y2;
+
+  float brightness;
+  color white = color(255, 255, 255);
+
+  if ((indexDrawn + 1) < j)
+  {
+
+    // Ready the offscreen buffer for drawing onto
+    offScreen.beginDraw();
+
+    if (indexDrawn < 0) {
+      //offScreen.image(imgBackground, 0, 0, 800, 631);  // Copy original background image into place!
+
+      offScreen.noFill();
+      offScreen.strokeWeight(0.5);
+
+      if (PaperSizeA4)
+      {
+        offScreen.stroke(128, 128, 255);  // Light Blue: A4
+        float rectW = PixelsPerInch * 297/25.4;
+        float rectH = PixelsPerInch * 210/25.4;
+        offScreen.rect(float(MousePaperLeft), float(MousePaperTop), rectW, rectH);
+      } else
+      {   
+        offScreen.stroke(255, 128, 128); // Light Red: US Letter
+        float rectW = PixelsPerInch * 11.0;
+        float rectH = PixelsPerInch * 8.5;
+        offScreen.rect(float(MousePaperLeft), float(MousePaperTop), rectW, rectH);
+      }
+    } else
+      offScreen.image(imgMain, 0, 0);
+
+    offScreen.strokeWeight(1); 
+    //offScreen.stroke(PenColor);
+
+    brightness = 0;
+    color DoneColor = lerpColor(PenColor, white, brightness);
+
+    brightness = 0.8;
+    color ToDoColor = lerpColor(PenColor, white, brightness); 
+
+
+
+    x1 = 0;
+    y1 = 0;
+
+    boolean virtualPenDown = false;
+
+    int index = 0;
+    if (index < 0)
+      index = 0;
+    while ( index < j)
+    {
+      PVector toDoItem = ToDoList[index];
+
+      x2 = toDoItem.x;
+      y2 = toDoItem.y;
+
+      if (x2 >= 0) {
+        if (virtualPenDown)
+        {
+          if (index < indexDone)
+            offScreen.stroke(DoneColor);
+          else
+            offScreen.stroke(ToDoColor);
+
+          offScreen.line(x1, y1, x2, y2); // Preview lines that are not yet on paper
+
+          //println("Draw line: "+str(x1)+", "+str(y1)+", "+str(x2) + ", "+str(y2));
+
+          x1 = x2;
+          y1 = y2;
+        } else {
+          //println("Pen up move");
+          x1 = x2;
+          y1 = y2;
+        }
+      } else {
+        int x3 = -1 * round(x2);
+        if (x3 == 30) 
+        {
+          virtualPenDown = false;
+          //println("pen up");
+        } else if (x3 == 31) 
+        {  
+          virtualPenDown = true;
+          //println("pen down");
+        } else if (x3 == 35) 
+        {// Home;  MoveToXY(0, 0); Do not draw home moves.
+          //if (virtualPenDown)
+          //offScreen.line(x1, y1, 0, 0); // Preview lines that are not yet on paper
+          x1 = 0;
+          y1 = 0;
+        }
+      }
+      index++;
+    }
+
+    offScreen.endDraw();
+
+    imgMain = offScreen.get(0, 0, offScreen.width, offScreen.height);
+  }
+}
+
 void setup() {
   borderWidth = 6;
   mainwidth = 800;
