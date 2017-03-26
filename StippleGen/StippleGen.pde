@@ -108,11 +108,11 @@ import de.looksgood.ani.*;
 ToxiclibsSupport gfx;
 
 // Feel free to play with these three default settings
-float cutoff = 0.1;
-float minDotSize = 1.05;
+float cutoff = 0.15;
+float minDotSize = 1.25;
 float dotSizeFactor = 4;
 // Max value is normally 10000. Press 'x' key to allow 50000 stipples. (SLOW)
-int maxParticles = 3000;
+int maxParticles = 4000;
 
 //Scale each cell to fit in a cellBuffer-sized square window for computing the centroid.
 int cellBuffer = 100;
@@ -1543,6 +1543,94 @@ void draw() {
 
     errorTime = millis();
     errorDisp = true;
+  }
+
+  if (debugMode)
+  {
+    frame.setTitle("AxiGen      " + int(frameRate) + " fps");
+  }
+
+  drawToDoList();
+
+  // NON-DRAWING LOOP CHECKS ==========================================
+
+  if (doSerialConnect == false)
+    checkServiceBrush(); 
+
+
+  checkHighlights();
+/*
+  if (UIMessage.label != "")
+    if (millis() > UIMessageExpire) {
+
+      UIMessage.displayColor = lerpColor(UIMessage.displayColor, color(242), .5);
+      UIMessage.highlightColor = UIMessage.displayColor;
+
+      if (millis() > (UIMessageExpire + 500)) { 
+        UIMessage.label = "";
+        UIMessage.displayColor = LabelColor;
+      }
+      redrawButtons();
+    }
+*/
+
+  // ALL ACTUAL DRAWING ==========================================
+
+  if  (hKeyDown)
+  {  // Help display
+    //image(loadImage(HelpImageName), 0, 0, 800, 631);
+
+
+    println("HELP requested");
+  } else
+  {
+
+    image(imgMain, 0, 0, width, height);    // Draw Background image  (incl. paint paths)
+
+    // Draw buttons image
+    image(imgButtons, 0, 0);
+
+    // Draw highlight image
+    image(imgHighlight, 0, 0);
+
+    // Draw locator crosshair at xy pos, less crosshair offset
+    image(imgLocator, MotorLocatorX-10, MotorLocatorY-15);
+  }
+
+
+  if (doSerialConnect)
+  {
+    // FIRST RUN ONLY:  Connect here, so that 
+
+    doSerialConnect = false;
+
+    scanSerial();
+
+    if (SerialOnline)
+    {    
+      myPort.write("EM,1,1\r");  //Configure both steppers in 1/16 step mode
+
+      // Configure brush lift servo endpoints and speed
+      myPort.write("SC,4," + str(ServoPaint) + "\r");  // Brush DOWN position, for painting
+      myPort.write("SC,5," + str(ServoUp) + "\r");  // Brush UP position 
+
+      myPort.write("SC,10,65535\r"); // Set brush raising and lowering speed.
+
+      // Ensure that we actually raise the brush:
+      BrushDown = true;  
+      raiseBrush();    
+
+      // UIMessage.label = "Welcome to AxiGen!  Hold 'h' key for help!";
+      UIMessageExpire = millis() + 5000;
+      redrawButtons();
+    } else
+    { 
+      println("Now entering offline simulation mode.\n");
+
+      // UIMessage.label = "AxiDraw not found.  Entering Simulation Mode. ";
+      UIMessageExpire = millis() + 5000;
+      redrawButtons();
+    }
   }
 }
 
