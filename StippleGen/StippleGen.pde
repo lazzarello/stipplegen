@@ -507,6 +507,95 @@ void setup() {
   invertImg = false;
   fileLoaded = false;
   reInitiallizeArray = false;
+  
+  // copy and paste setup from AxiGen1
+  // size(800, 631, P2D);
+  //pixelDensity(2);
+
+
+  Ani.init(this); // Initialize animation library
+  Ani.setDefaultEasing(Ani.LINEAR);
+
+  firstPath = true;
+
+  //offScreen = createGraphics(800, 631, JAVA2D);
+  offScreen = createGraphics(800, 631);
+
+
+  //// Allow frame to be resized?
+  //  if (frame != null) {
+  //    frame.setResizable(true);
+  //  }
+
+  surface.setTitle("AxiGen");
+
+  if (PaperSizeA4)
+  {
+    MousePaperRight = round(MousePaperLeft + PixelsPerInch * 297/25.4);
+    MousePaperBottom = round(MousePaperTop + PixelsPerInch * 210/25.4);
+  } else
+  {
+    MousePaperRight = round(MousePaperLeft + PixelsPerInch * 11.0);
+    MousePaperBottom = round(MousePaperTop + PixelsPerInch * 8.5);
+  }
+
+
+  shiftKeyDown = false;
+
+  frameRate(60);  // sets maximum speed only
+
+  MotorMinX = 0;
+  MotorMinY = 0;
+  MotorMaxX = int(floor(float(MousePaperRight - MousePaperLeft) * MotorStepsPerPixel)) ;
+  MotorMaxY = int(floor(float(MousePaperBottom - MousePaperTop) * MotorStepsPerPixel)) ;
+
+  lastPosition = new PVector(-1, -1);
+
+  ServoUp = 7500 + 175 * ServoUpPct;    // Brush UP position, native units
+  ServoPaint = 7500 + 175 * ServoPaintPct;   // Brush DOWN position, native units. 
+
+
+  // Button setup
+
+  rectMode(CORNERS);
+
+  MotorX = 0;
+  MotorY = 0; 
+
+  ToDoList = new PVector[0];
+
+  //ToDoList = new int[0];
+  PVector cmd = new PVector(-35, 0);   // Command code: Go home (0,0)
+  ToDoList = (PVector[]) append(ToDoList, cmd); 
+
+
+
+  indexDone = -1;    // Index in to-do list of last action performed
+  indexDrawn = -1;   // Index in to-do list of last to-do element drawn to screen
+
+  raiseBrushStatus = -1;
+  lowerBrushStatus = -1; 
+  moveStatus = -1;
+  MoveDestX = -1;
+  MoveDestY = -1;
+
+
+  Paused = true;
+  BrushDownAtPause = false;
+
+  // Set initial position of indicator at carriage minimum 0,0
+  int[] pos = getMotorPixelPos();
+
+  background(255);
+  MotorLocatorX = pos[0];
+  MotorLocatorY = pos[1];
+
+  NextMoveTime = millis(); 
+
+  drawToDoList();
+  redrawButtons();
+  redrawHighlight();
+  redrawLocator();  
 }
 
 void fileSelected(File selection) {
