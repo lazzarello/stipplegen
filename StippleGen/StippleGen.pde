@@ -108,11 +108,11 @@ import de.looksgood.ani.*;
 ToxiclibsSupport gfx;
 
 // Feel free to play with these three default settings
-float cutoff = 0;
-float minDotSize = 1.75;
+float cutoff = 0.1;
+float minDotSize = 1.05;
 float dotSizeFactor = 4;
 // Max value is normally 10000. Press 'x' key to allow 50000 stipples. (SLOW)
-int maxParticles = 2000;
+int maxParticles = 3000;
 
 //Scale each cell to fit in a cellBuffer-sized square window for computing the centroid.
 int cellBuffer = 100;
