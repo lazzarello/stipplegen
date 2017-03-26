@@ -170,7 +170,7 @@ Polygon2D regionList[];
 PolygonClipper2D clip;
 PImage img, imgload, imgblur;
 
-// User Settings for serial port 
+// AxiDraw User Settings: 
 float MotorSpeed = 4000.0;  // Steps per second, 1500 default
 
 int ServoUpPct = 70;    // Brush UP position, %  (higher number lifts higher). 
@@ -187,6 +187,9 @@ boolean debugMode = false;
 
 boolean PaperSizeA4 = false; // true for A4. false for US letter.
 
+
+
+
 // Offscreen buffer images for holding drawn elements, makes redrawing MUCH faster
 
 PGraphics offScreen;
@@ -196,6 +199,8 @@ PImage imgMain;         // Primary drawing canvas
 PImage imgLocator;      // Cursor crosshairs
 PImage imgButtons;      // Text buttons
 PImage imgHighlight;
+String BackgroundImageName = "background.png"; 
+String HelpImageName = "help.png"; 
 
 boolean segmentQueued = false;
 PVector queuePt1 = new PVector(-1, -1);
@@ -251,6 +256,8 @@ int MotorLocatorX;  // Position of motor locator
 int MotorLocatorY; 
 PVector lastPosition; // Record last encoded position for drawing
 
+
+
 boolean forceRedraw;
 boolean shiftKeyDown;
 boolean keyup = false;
@@ -291,10 +298,28 @@ int indexDrawn;   // Index in to-do list of last to-do element drawn to screen
 PFont font_ML16;
 PFont font_CB; // Command button font
 
+
+
 int TextColor = 75;
 int LabelColor = 150;
 color TextHighLight = Black;
 int DefocusColor = 175;
+
+SimpleButton pauseButton;
+SimpleButton brushUpButton;
+SimpleButton brushDownButton;
+SimpleButton parkButton;
+SimpleButton motorOffButton;
+SimpleButton motorZeroButton;
+SimpleButton clearButton;
+SimpleButton replayButton;
+SimpleButton urlButton;
+SimpleButton quitButton;
+
+
+SimpleButton brushLabel;
+SimpleButton motorLabel;
+SimpleButton UIMessage;
 
 void LoadImageAndScale() {
   int tempx = 0;
@@ -398,117 +423,6 @@ void MainArraySetup() {
   voronoi = new Voronoi();  // Erase mesh
   tempShowCells = true;
   fileModeTSP = false;
-}
-
-void drawToDoList()
-{  
-  // Erase all painting on main image background, and draw the existing "ToDo" list
-  // on the off-screen buffer.
-
-  int j = ToDoList.length;
-  float x1, x2, y1, y2;
-
-  float brightness;
-  color white = color(255, 255, 255);
-
-  if ((indexDrawn + 1) < j)
-  {
-
-    // Ready the offscreen buffer for drawing onto
-    offScreen.beginDraw();
-
-    if (indexDrawn < 0) {
-      //offScreen.image(imgBackground, 0, 0, 800, 631);  // Copy original background image into place!
-
-      offScreen.noFill();
-      offScreen.strokeWeight(0.5);
-
-      if (PaperSizeA4)
-      {
-        offScreen.stroke(128, 128, 255);  // Light Blue: A4
-        float rectW = PixelsPerInch * 297/25.4;
-        float rectH = PixelsPerInch * 210/25.4;
-        offScreen.rect(float(MousePaperLeft), float(MousePaperTop), rectW, rectH);
-      } else
-      {   
-        offScreen.stroke(255, 128, 128); // Light Red: US Letter
-        float rectW = PixelsPerInch * 11.0;
-        float rectH = PixelsPerInch * 8.5;
-        offScreen.rect(float(MousePaperLeft), float(MousePaperTop), rectW, rectH);
-      }
-    } else
-      offScreen.image(imgMain, 0, 0);
-
-    offScreen.strokeWeight(1); 
-    //offScreen.stroke(PenColor);
-
-    brightness = 0;
-    color DoneColor = lerpColor(PenColor, white, brightness);
-
-    brightness = 0.8;
-    color ToDoColor = lerpColor(PenColor, white, brightness); 
-
-
-
-    x1 = 0;
-    y1 = 0;
-
-    boolean virtualPenDown = false;
-
-    int index = 0;
-    if (index < 0)
-      index = 0;
-    while ( index < j)
-    {
-      PVector toDoItem = ToDoList[index];
-
-      x2 = toDoItem.x;
-      y2 = toDoItem.y;
-
-      if (x2 >= 0) {
-        if (virtualPenDown)
-        {
-          if (index < indexDone)
-            offScreen.stroke(DoneColor);
-          else
-            offScreen.stroke(ToDoColor);
-
-          offScreen.line(x1, y1, x2, y2); // Preview lines that are not yet on paper
-
-          //println("Draw line: "+str(x1)+", "+str(y1)+", "+str(x2) + ", "+str(y2));
-
-          x1 = x2;
-          y1 = y2;
-        } else {
-          //println("Pen up move");
-          x1 = x2;
-          y1 = y2;
-        }
-      } else {
-        int x3 = -1 * round(x2);
-        if (x3 == 30) 
-        {
-          virtualPenDown = false;
-          //println("pen up");
-        } else if (x3 == 31) 
-        {  
-          virtualPenDown = true;
-          //println("pen down");
-        } else if (x3 == 35) 
-        {// Home;  MoveToXY(0, 0); Do not draw home moves.
-          //if (virtualPenDown)
-          //offScreen.line(x1, y1, 0, 0); // Preview lines that are not yet on paper
-          x1 = 0;
-          y1 = 0;
-        }
-      }
-      index++;
-    }
-
-    offScreen.endDraw();
-
-    imgMain = offScreen.get(0, 0, offScreen.width, offScreen.height);
-  }
 }
 
 void setup() {
@@ -619,10 +533,7 @@ void setup() {
   fileLoaded = false;
   reInitiallizeArray = false;
   
-  // copy and paste setup from AxiGen1
-  // size(800, 631, P2D);
-  //pixelDensity(2);
-
+  // AxiDraw setups
 
   Ani.init(this); // Initialize animation library
   Ani.setDefaultEasing(Ani.LINEAR);
@@ -631,7 +542,6 @@ void setup() {
 
   //offScreen = createGraphics(800, 631, JAVA2D);
   offScreen = createGraphics(800, 631);
-
 
   //// Allow frame to be resized?
   //  if (frame != null) {
@@ -650,7 +560,6 @@ void setup() {
     MousePaperBottom = round(MousePaperTop + PixelsPerInch * 8.5);
   }
 
-
   shiftKeyDown = false;
 
   frameRate(60);  // sets maximum speed only
@@ -665,8 +574,51 @@ void setup() {
   ServoUp = 7500 + 175 * ServoUpPct;    // Brush UP position, native units
   ServoPaint = 7500 + 175 * ServoPaintPct;   // Brush DOWN position, native units. 
 
-
   // Button setup
+
+  font_ML16  = loadFont("Miso-Light-16.vlw"); 
+  font_CB = loadFont("Miso-20.vlw"); 
+
+  int xbutton = MousePaperLeft + 100;
+  int ybutton = MousePaperBottom + 20;
+
+  pauseButton = new SimpleButton("Start", xbutton, MousePaperBottom + 20, font_CB, 20, TextColor, TextHighLight);
+  xbutton += 60; 
+
+  brushLabel = new SimpleButton("Pen:", xbutton, ybutton, font_CB, 20, LabelColor, LabelColor);
+  xbutton += 45;
+  brushUpButton = new SimpleButton("Up", xbutton, ybutton, font_CB, 20, TextColor, TextHighLight);
+  xbutton += 22;
+  brushDownButton = new SimpleButton("Down", xbutton, ybutton, font_CB, 20, TextColor, TextHighLight);
+  xbutton += 44;
+
+  parkButton = new SimpleButton("Park", xbutton, ybutton, font_CB, 20, TextColor, TextHighLight);
+  xbutton += 60;
+
+  motorLabel = new SimpleButton("Motors:", xbutton, ybutton, font_CB, 20, LabelColor, LabelColor);
+  xbutton += 55;
+  motorOffButton = new SimpleButton("Off", xbutton, ybutton, font_CB, 20, TextColor, TextHighLight);
+  xbutton += 30;
+  motorZeroButton = new SimpleButton("Zero", xbutton, ybutton, font_CB, 20, TextColor, TextHighLight);
+  xbutton += 70;
+  clearButton = new SimpleButton("Clear All", xbutton, MousePaperBottom + 20, font_CB, 20, TextColor, TextHighLight);
+  xbutton += 80;
+  replayButton = new SimpleButton("Replay All", xbutton, MousePaperBottom + 20, font_CB, 20, TextColor, TextHighLight);
+
+  xbutton = MousePaperLeft + 30;   
+  ybutton =  30;
+
+  quitButton = new SimpleButton("Quit", xbutton, ybutton, font_CB, 20, LabelColor, TextHighLight); 
+
+  xbutton = 655;
+
+  urlButton = new SimpleButton("AxiDraw.com", xbutton, ybutton, font_CB, 20, LabelColor, TextHighLight);
+
+  UIMessage = new SimpleButton("Welcome to AxiGen! Hold 'h' key for help!", 
+    MousePaperLeft, MousePaperTop - 5, font_CB, 20, LabelColor, LabelColor);
+
+  UIMessage.label = "Searching For ... ";
+  UIMessageExpire = millis() + 25000; 
 
   rectMode(CORNERS);
 
@@ -679,8 +631,6 @@ void setup() {
   PVector cmd = new PVector(-35, 0);   // Command code: Go home (0,0)
   ToDoList = (PVector[]) append(ToDoList, cmd); 
 
-
-
   indexDone = -1;    // Index in to-do list of last action performed
   indexDrawn = -1;   // Index in to-do list of last to-do element drawn to screen
 
@@ -689,7 +639,6 @@ void setup() {
   moveStatus = -1;
   MoveDestX = -1;
   MoveDestY = -1;
-
 
   Paused = true;
   BrushDownAtPause = false;
@@ -701,12 +650,13 @@ void setup() {
   MotorLocatorX = pos[0];
   MotorLocatorY = pos[1];
 
-  NextMoveTime = millis(); 
+  NextMoveTime = millis();
+  imgBackground = loadImage(BackgroundImageName);  // Load the image into the program  
 
   drawToDoList();
   redrawButtons();
   redrawHighlight();
-  redrawLocator();  
+  redrawLocator();
 }
 
 void fileSelected(File selection) {
@@ -1544,6 +1494,8 @@ void draw() {
     errorTime = millis();
     errorDisp = true;
   }
+  
+  // AxiDraw() drawing functions
 
   if (debugMode)
   {
@@ -1559,7 +1511,7 @@ void draw() {
 
 
   checkHighlights();
-/*
+
   if (UIMessage.label != "")
     if (millis() > UIMessageExpire) {
 
@@ -1572,13 +1524,13 @@ void draw() {
       }
       redrawButtons();
     }
-*/
+
 
   // ALL ACTUAL DRAWING ==========================================
 
   if  (hKeyDown)
   {  // Help display
-    //image(loadImage(HelpImageName), 0, 0, 800, 631);
+    image(loadImage(HelpImageName), 0, 0, 800, 631);
 
 
     println("HELP requested");
@@ -1620,14 +1572,14 @@ void draw() {
       BrushDown = true;  
       raiseBrush();    
 
-      // UIMessage.label = "Welcome to AxiGen!  Hold 'h' key for help!";
+      UIMessage.label = "Welcome to AxiGen!  Hold 'h' key for help!";
       UIMessageExpire = millis() + 5000;
       redrawButtons();
     } else
     { 
       println("Now entering offline simulation mode.\n");
 
-      // UIMessage.label = "AxiDraw not found.  Entering Simulation Mode. ";
+      UIMessage.label = "AxiDraw not found.  Entering Simulation Mode. ";
       UIMessageExpire = millis() + 5000;
       redrawButtons();
     }
@@ -1645,5 +1597,120 @@ void keyPressed() {
   if (key == 'x') {   // If this program doesn't run slowly enough for you, 
     // simply press the 'x' key on your keyboard. :)
     cp5.getController("sliderStipples").setMax(50000.0);
+  }
+}
+
+// AxiGen1 functions...copy paste imported
+void drawToDoList()
+{  
+  // Erase all painting on main image background, and draw the existing "ToDo" list
+  // on the off-screen buffer.
+
+  int j = ToDoList.length;
+  float x1, x2, y1, y2;
+
+  float brightness;
+  color white = color(255, 255, 255);
+
+  if ((indexDrawn + 1) < j)
+  {
+
+    // Ready the offscreen buffer for drawing onto
+    offScreen.beginDraw();
+
+    if (indexDrawn < 0) {
+      offScreen.image(imgBackground, 0, 0, 800, 631);  // Copy original background image into place!
+
+      offScreen.noFill();
+      offScreen.strokeWeight(0.5);
+
+      if (PaperSizeA4)
+      {
+        offScreen.stroke(128, 128, 255);  // Light Blue: A4
+        float rectW = PixelsPerInch * 297/25.4;
+        float rectH = PixelsPerInch * 210/25.4;
+        offScreen.rect(float(MousePaperLeft), float(MousePaperTop), rectW, rectH);
+      } else
+      {   
+        offScreen.stroke(255, 128, 128); // Light Red: US Letter
+        float rectW = PixelsPerInch * 11.0;
+        float rectH = PixelsPerInch * 8.5;
+        offScreen.rect(float(MousePaperLeft), float(MousePaperTop), rectW, rectH);
+      }
+    } else
+      offScreen.image(imgMain, 0, 0);
+
+    offScreen.strokeWeight(1); 
+    //offScreen.stroke(PenColor);
+
+    brightness = 0;
+    color DoneColor = lerpColor(PenColor, white, brightness);
+
+    brightness = 0.8;
+    color ToDoColor = lerpColor(PenColor, white, brightness); 
+
+
+
+    x1 = 0;
+    y1 = 0;
+
+    boolean virtualPenDown = false;
+
+    int index = 0;
+    if (index < 0)
+      index = 0;
+    while ( index < j)
+    {
+      PVector toDoItem = ToDoList[index];
+
+      x2 = toDoItem.x;
+      y2 = toDoItem.y;
+
+      if (x2 >= 0) {
+        if (virtualPenDown)
+        {
+          if (index < indexDone)
+            offScreen.stroke(DoneColor);
+          else
+            offScreen.stroke(ToDoColor);
+
+          offScreen.line(x1, y1, x2, y2); // Preview lines that are not yet on paper
+
+          //println("Draw line: "+str(x1)+", "+str(y1)+", "+str(x2) + ", "+str(y2));
+
+          x1 = x2;
+          y1 = y2;
+        } else {
+          //println("Pen up move");
+          x1 = x2;
+          y1 = y2;
+        }
+      } else {
+        int x3 = -1 * round(x2);
+        if (x3 == 30) 
+        {
+          virtualPenDown = false;
+          //println("pen up");
+        } else if (x3 == 31) 
+        {  
+          virtualPenDown = true;
+          //println("pen down");
+        } else if (x3 == 35) 
+        {// Home;  MoveToXY(0, 0); Do not draw home moves.
+          //if (virtualPenDown)
+          //offScreen.line(x1, y1, 0, 0); // Preview lines that are not yet on paper
+          x1 = 0;
+          y1 = 0;
+        }
+      }
+
+
+      index++;
+    }
+
+
+    offScreen.endDraw();
+
+    imgMain = offScreen.get(0, 0, offScreen.width, offScreen.height);
   }
 }
