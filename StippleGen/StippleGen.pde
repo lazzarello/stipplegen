@@ -99,6 +99,9 @@ import toxi.processing.*;
 import javax.swing.UIManager;
 import javax.swing.JFileChooser;
 
+// need serial lib for AxiDraw control
+import processing.serial.*;
+
 // helper class for rendering
 ToxiclibsSupport gfx;
 
@@ -164,6 +167,23 @@ Voronoi voronoi;
 Polygon2D regionList[];
 PolygonClipper2D clip;
 PImage img, imgload, imgblur;
+
+// User Settings for serial port 
+float MotorSpeed = 4000.0;  // Steps per second, 1500 default
+
+int ServoUpPct = 70;    // Brush UP position, %  (higher number lifts higher). 
+int ServoPaintPct = 30;    // Brush DOWN position, %  (higher number lifts higher). 
+
+boolean reverseMotorX = false;
+boolean reverseMotorY = false;
+
+int delayAfterRaisingBrush = 300; //ms
+int delayAfterLoweringBrush = 300; //ms
+
+//boolean debugMode = true;
+boolean debugMode = false;
+
+boolean PaperSizeA4 = false; // true for A4. false for US letter.
 
 void LoadImageAndScale() {
   int tempx = 0;
