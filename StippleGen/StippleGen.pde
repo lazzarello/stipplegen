@@ -199,7 +199,7 @@ PImage imgMain;         // Primary drawing canvas
 PImage imgLocator;      // Cursor crosshairs
 PImage imgButtons;      // Text buttons
 PImage imgHighlight;
-String BackgroundImageName = "background.png"; 
+//String BackgroundImageName = "background.png"; 
 String HelpImageName = "help.png"; 
 
 boolean segmentQueued = false;
@@ -651,7 +651,7 @@ void setup() {
   MotorLocatorY = pos[1];
 
   NextMoveTime = millis();
-  imgBackground = loadImage(BackgroundImageName);  // Load the image into the program  
+  //imgBackground = loadImage(BackgroundImageName);  // Load the image into the program  
 
   drawToDoList();
   redrawButtons();
@@ -1619,7 +1619,7 @@ void drawToDoList()
     offScreen.beginDraw();
 
     if (indexDrawn < 0) {
-      offScreen.image(imgBackground, 0, 0, 800, 631);  // Copy original background image into place!
+      //offScreen.image(imgBackground, 0, 0, 800, 631);  // Copy original background image into place!
 
       offScreen.noFill();
       offScreen.strokeWeight(0.5);
