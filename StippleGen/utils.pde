@@ -245,7 +245,7 @@ void zero()
   //  if (debugMode) println("Motor X: " + MotorX + "  Motor Y: " + MotorY);
 }
 
-/*
+
 void clearall()
 {  // ***** CLEAR ALL *****
 
@@ -263,7 +263,6 @@ void clearall()
   Paused = false; 
   pause();
 }
-*/
 
 void quitApp()
 {  // ***** QUIT *****

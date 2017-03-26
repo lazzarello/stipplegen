@@ -1591,12 +1591,153 @@ void mousePressed() {
   if (overRect(textColumnStart - 15, mainheight + 35, 205, 20) ) {
     link("http://www.evilmadscientist.com/go/stipple2");
   }
+  boolean doHighlightRedraw = false;
+
+  //The mouse button was just pressed!  Let's see where the user clicked!
+
+  if ((mouseX >= MousePaperLeft) && (mouseX <= MousePaperRight) && (mouseY >= MousePaperTop) && (mouseY <= MousePaperBottom))
+  { 
+
+    GenerateArtwork(mouseX, mouseY, 5 + random(25), 100);
+
+    doHighlightRedraw = true;
+  }
+
+
+  if (doHighlightRedraw) {
+    redrawLocator();
+    redrawHighlight();
+  }
+
+
+  if ( pauseButton.isSelected() )  
+    pause(); 
+  else if ( brushUpButton.isSelected() )  
+  {
+
+    if (Paused)
+      raiseBrush();
+    else
+    {     
+      ToDoList = (PVector[]) append(ToDoList, new PVector(-30, 0)); // Command 30 (raise pen)
+    }
+  } else if ( brushDownButton.isSelected() ) {
+
+    if (Paused)
+      lowerBrush();
+    else
+    {
+      ToDoList = (PVector[]) append(ToDoList, new PVector(-31, 0)); // Command 31 (lower pen)
+    }
+  } else if (urlButton.isSelected()) {
+    link("http://axidraw.com");
+  } else if ( parkButton.isSelected() )  
+  {
+
+    if (Paused)
+    { 
+      raiseBrush();
+      MoveToXY(0, 0);
+    } else
+    {
+      ToDoList = (PVector[]) append(ToDoList, new PVector(-30, 0)); // Command 30 (raise pen)
+      ToDoList = (PVector[]) append(ToDoList, new PVector(-35, 0)); // Command 35 (go home)
+    }
+  } else if ( motorOffButton.isSelected() )  
+    MotorsOff();    
+  else if ( motorZeroButton.isSelected() )  
+    zero();      
+  else if ( clearButton.isSelected() )  
+    clearall();
+  else if ( replayButton.isSelected() )  
+  {
+    // Clear indexDone to "zero" (actually, -1, since even element 0 is not "done.")   & redraw to-do list.
+
+    indexDone = -1;    // Index in to-do list of last action performed
+    indexDrawn = -1;   // Index in to-do list of last to-do element drawn to screen
+
+    drawToDoList();
+  } else if ( quitButton.isSelected() )  
+    quitApp();
 }
 
 void keyPressed() {
   if (key == 'x') {   // If this program doesn't run slowly enough for you, 
     // simply press the 'x' key on your keyboard. :)
     cp5.getController("sliderStipples").setMax(50000.0);
+  }
+  
+
+  if (key == CODED) {
+
+    // Arrow keys are used for nudging, with or without shift key.
+
+    if (keyCode == UP) 
+    {
+      keyup = true;
+    }
+    if (keyCode == DOWN)
+    { 
+      keydown = true;
+    }
+    if (keyCode == LEFT) keyleft = true; 
+    if (keyCode == RIGHT) keyright = true; 
+    if (keyCode == SHIFT) shiftKeyDown = true;
+  } else
+  {
+    key = Character.toLowerCase(key);
+    println("Key pressed" + key); 
+
+    if ( key == 'b')   // Toggle brush up or brush down with 'b' key
+    {
+      if (BrushDown)
+        raiseBrush();
+      else
+        lowerBrush();
+    }
+
+    if ( key == 'z')  // Zero motor coordinates
+      zero();
+
+    if ( key == 'c')  // Zero motor coordinates
+      clearall();
+
+    if ( key == ' ')  //Space bar: Pause
+      pause();
+
+    if ( key == 'q')  // Move home (0,0)
+    {
+      raiseBrush();
+      MoveToXY(0, 0);
+    }
+
+    if ( key == 'h')  // display help
+    {
+      hKeyDown = true;
+      println("HELP requested");
+    } 
+
+    if ( key == 't')  // Disable motors, to manually move carriage.  
+      MotorsOff();
+
+    if ( key == '1')
+      MotorSpeed = 500;  
+    if ( key == '2')
+      MotorSpeed = 1000;        
+    if ( key == '3')
+      MotorSpeed = 2000;        
+    if ( key == '4')
+      MotorSpeed = 3000;        
+    if ( key == '5')
+      MotorSpeed = 4000;        
+    if ( key == '6')
+      MotorSpeed = 4500;        
+    if ( key == '7')
+      MotorSpeed = 5000;        
+    if ( key == '8')
+      MotorSpeed = 5500;        
+    if ( key == '9')
+      MotorSpeed = 6000;
   }
 }
 
@@ -1713,4 +1854,103 @@ void drawToDoList()
 
     imgMain = offScreen.get(0, 0, offScreen.width, offScreen.height);
   }
+}
+
+void pause()
+{
+  //println("Pause button");
+  pauseButton.displayColor = TextColor;
+  if (Paused)
+  {
+    Paused = false;
+    pauseButton.label = "Pause";
+
+
+    if (BrushDownAtPause)
+    {
+      int waitTime = NextMoveTime - millis();
+      if (waitTime > 0)
+      { 
+        delay (waitTime);  // Wait for prior move to finish:
+      }
+
+      if (BrushDown) { 
+        raiseBrush();
+      }
+
+      waitTime = NextMoveTime - millis();
+      if (waitTime > 0)
+      { 
+        delay (waitTime);  // Wait for prior move to finish:
+      }
+
+      MoveToXY(xLocAtPause, yLocAtPause);
+
+      waitTime = NextMoveTime - millis();
+      if (waitTime > 0)
+      { 
+        delay (waitTime);  // Wait for prior move to finish:
+      }
+
+      lowerBrush();
+    }
+  } else
+  {
+    Paused = true;
+    pauseButton.label = "Resume";
+    //TextColor
+
+
+    if (BrushDown) {
+      BrushDownAtPause = true; 
+      raiseBrush();
+    } else
+      BrushDownAtPause = false;
+
+    xLocAtPause = MotorX;
+    yLocAtPause = MotorY;
+  }
+
+  redrawButtons();
+}
+
+void GenerateArtwork(float xStart, float yStart, float radius, int steps)
+{
+  int i = 0;
+  float r;
+  float xPos = xStart;
+  float yPos = yStart;
+
+  ToDoList = (PVector[]) append(ToDoList, new PVector(-30, 0)); //Command 30 (raise pen)
+
+  // Command Code: Move to first (X,Y) point
+  ToDoList = (PVector[]) append(ToDoList, new PVector(xPos, yPos)); 
+
+  ToDoList = (PVector[]) append(ToDoList, new PVector(-31, 0)); //Command 31 (lower pen)
+
+
+  // Trivial example of a generative method: 
+  // Construct a random walk of constant-length steps.
+  // Continue walking until maximum number of steps OR
+  //     until we hit the walls of our page.
+
+  while (i < steps)
+  {
+    r = random(TWO_PI);
+
+    xPos = xPos + (radius * cos(r));
+    yPos = yPos + (radius * sin(r));   
+
+    if ((xPos < MousePaperLeft) || (xPos > MousePaperRight))
+      break;
+    if ((yPos < MousePaperTop) || (yPos > MousePaperBottom))
+      break;
+
+    // Command Code: Move to (X,Y)
+    ToDoList = (PVector[]) append(ToDoList, new PVector(xPos, yPos)); 
+
+    i++;
+  }
+
+  ToDoList = (PVector[]) append(ToDoList, new PVector(-30, 0)); //Command 30 (raise pen)
 }
