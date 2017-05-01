@@ -321,6 +321,7 @@ SimpleButton brushLabel;
 SimpleButton motorLabel;
 SimpleButton UIMessage;
 
+// The main function that begins to process an image. runs from main()
 void LoadImageAndScale() {
   int tempx = 0;
   int tempy = 0;
@@ -339,7 +340,13 @@ void LoadImageAndScale() {
   if (!fileLoaded) {
     // Load a demo image, at least until we have a "real" image to work with.
     // Image from: http://commons.wikimedia.org/wiki/File:Kelly,_Grace_(Rear_Window).jpg
-    imgload = loadImage("grace.jpg"); // Load demo image
+    // accept a command line argument as a filename
+    // run with processing-java --sketch=<path-to-repo>/stipplegen/StippleGen --run <full-path-to-image>
+    if ( args != null ) {
+      imgload = loadImage(args[0]);
+    } else {
+      imgload = loadImage("grace.jpg"); // Load demo image
+    }
   }
 
   if ((imgload.width > mainwidth) || (imgload.height > mainheight)) {
