@@ -86,16 +86,16 @@ void scanSerial()
     } else {
       // Assume linux
 
-      str1 = "/dev/ttyACM"; 
+      str1 = "/dev/ttyACM0"; 
       str1 = str1.substring(0, 11);
 
       j = 0;
-      while (j < PortCount) {
-        str2 = Serial.list()[j].substring(0, 11);
-        if (str1.equals(str2) == true)
+      //while (j < PortCount) {
+      //  str2 = Serial.list()[j].substring(0, 11);
+      //  if (str1.equals(str2) == true)
           OpenPortList =  append(OpenPortList, j);
-        j++;
-      }
+      //  j++;
+      //}
     }
 
 

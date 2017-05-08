@@ -108,7 +108,7 @@ import de.looksgood.ani.*;
 ToxiclibsSupport gfx;
 
 // Feel free to play with these three default settings
-float cutoff = 0.15;
+float cutoff = 0.2;
 float minDotSize = 1.25;
 float dotSizeFactor = 4;
 // Max value is normally 10000. Press 'x' key to allow 50000 stipples. (SLOW)
