@@ -108,11 +108,11 @@ import de.looksgood.ani.*;
 ToxiclibsSupport gfx;
 
 // Feel free to play with these three default settings
-float cutoff = 0.15;
-float minDotSize = 1.25;
-float dotSizeFactor = 4;
+float cutoff = 0.10;
+float minDotSize = 1;
+float dotSizeFactor = 2;
 // Max value is normally 10000. Press 'x' key to allow 50000 stipples. (SLOW)
-int maxParticles = 4000;
+int maxParticles = 4500;
 
 //Scale each cell to fit in a cellBuffer-sized square window for computing the centroid.
 int cellBuffer = 100;
@@ -1673,8 +1673,22 @@ void keyPressed() {
     // simply press the 'x' key on your keyboard. :)
     cp5.getController("sliderStipples").setMax(50000.0);
   }
-  
 
+  if (key == ' ') {
+    if (!pausemode) {
+      cp5.getController("buttonPause").setValue(1.0);
+    } else {
+      cp5.getController("buttonPause").setValue(0.0);
+    }
+  }
+  
+  if (key == 's') {
+    cp5.getController("buttonSavePath").setValue(1.0);
+    // save the SVG
+  }
+  
+  // disable all the axigen key commands since we're not using them now
+  /*
   if (key == CODED) {
 
     // Arrow keys are used for nudging, with or without shift key.
@@ -1746,6 +1760,7 @@ void keyPressed() {
     if ( key == '9')
       MotorSpeed = 6000;
   }
+  */
 }
 
 // AxiGen1 functions...copy paste imported
