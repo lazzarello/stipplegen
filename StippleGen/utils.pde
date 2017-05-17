@@ -86,8 +86,8 @@ void scanSerial()
     } else {
       // Assume linux
 
-      str1 = "/dev/ttyACM0"; 
-      str1 = str1.substring(0, 11);
+      //str1 = "/dev/ttyACM0"; 
+      //str1 = str1.substring(0, 11);
 
       j = 0;
       //while (j < PortCount) {
